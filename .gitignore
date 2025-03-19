@@ -1,0 +1,7 @@
+# created by virtualenv automatically
+
+.venv/Lib
+dataset/
+.venv/
+models/
+.idea/
