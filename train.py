@@ -6,7 +6,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, Flatten, Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-
+import pickle
 # data path
 train_dir = "dataset/train"
 val_dir = "dataset/test"
@@ -33,6 +33,14 @@ model.compile(optimizer=Adam(learning_rate=0.0001), loss="binary_crossentropy", 
 
 # Train the Model
 history = model.fit(train_generator, validation_data=val_generator, epochs=10, steps_per_epoch=len(train_generator), validation_steps=len(val_generator))
+
+# ensure history is not null
+if history.history:
+    with open("models/training_history.pkl", "wb") as f:
+        pickle.dump(history.history, f)
+    print("Training history save successfully！")
+else:
+    print("Training history is null，didn't save！")
 
 # save the Model
 model.save("models/vgg16_dog_cat_classifier.h5")
