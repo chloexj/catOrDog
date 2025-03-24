@@ -3,7 +3,8 @@ from tkinter import filedialog
 import numpy as np
 import tensorflow as tf
 import cv2
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk,ImageGrab
+import io
 
 #  Load the trained model
 model = tf.keras.models.load_model("models/vgg16_dog_cat_classifier.h5")
@@ -54,18 +55,56 @@ def upload_image():
 # create GUI
 root = tk.Tk()
 root.title("Cat or Dog")
+# change icon
+root.iconbitmap("icon.ico")
 
-# uoplad button
-upload_btn = tk.Button(root, text="Upload picture", command=upload_image, font=("Arial", 12), bg="lightblue")
-upload_btn.pack(pady=10)
 
 # show picture
 img_label = tk.Label(root)
 img_label.pack(pady=10)
 
+# paste the picture in clipboard
+def paste_clipboard_image():
+    global img_label, result_label
+
+    img = ImageGrab.grabclipboard()
+
+    if isinstance(img, Image.Image):
+        # Save clipboard image to memory
+        with io.BytesIO() as output:
+            img.save(output, format="PNG")
+            image_data = output.getvalue()
+
+        # Save to temp file to pass to OpenCV
+        temp_path = "clipboard_temp.png"
+        with open(temp_path, "wb") as f:
+            f.write(image_data)
+
+        # Resize and show image in GUI
+        img.thumbnail((250, 250))
+        display_img = ImageTk.PhotoImage(img)
+        img_label.config(image=display_img)
+        img_label.image = display_img
+
+        # Predict
+        result = predict(temp_path)
+        result_label.config(text=f"Predict Result: {result}", font=("Arial", 14, "bold"))
+    else:
+        result_label.config(text="No image in clipboard", font=("Arial", 12), fg="red")
+
+# uoplad button
+upload_btn = tk.Button(root, text="Upload picture", command=upload_image, font=("Arial", 12), bg="lightblue")
+upload_btn.pack(pady=10)
+
+# add paste button
+paste_btn = tk.Button(root, text="Paste from Clipboard", command=paste_clipboard_image, font=("Arial", 12), bg="lightgreen")
+paste_btn.pack(pady=5)
+
 # show predict result
 result_label = tk.Label(root, text="Predict Result: ", font=("Arial", 12))
 result_label.pack(pady=10)
+
+
 
 # run GUI
 root.mainloop()
